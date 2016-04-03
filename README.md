@@ -1,2 +1,7 @@
-# BicycleGame
+﻿# BicycleGame
+
+2016 한국산업기술대학교 
+
 게임엔진 프로그래밍
+
+프로젝트
