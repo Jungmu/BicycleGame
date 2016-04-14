@@ -1,4 +1,4 @@
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+ï»¿#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #endif
@@ -28,12 +28,18 @@ class MainListener : public FrameListener {
   Root* mRoot;
   SceneNode *mProfessorNode, *mFishNode, *mEmptyNode;
 
-  float rotateCount = 0.0f;
+  const Vector3 movingSpeed = Vector3(0.0f, 0.0f, 2.0f);
+  const Degree rotationSpeed = Degree(1.0f);
+  const Degree fishRotationSpeed = Degree(-1.0f);
+  const float professorMaxPosition_z = 250.0f;
+  
+  float rotationCount = 0.0f;
 
 public:
   MainListener(Root* root, OIS::Keyboard *keyboard) : mKeyboard(keyboard), mRoot(root) 
   {
     mProfessorNode = mRoot->getSceneManager("main")->getSceneNode("Professor");
+	// ë¹ˆë…¸ë“œëŠ” ë¬¼ê³ ê¸°ì˜ ë¶€ëª¨
 	mEmptyNode = mRoot->getSceneManager("main")->getSceneNode("Empty");
     mFishNode = mRoot->getSceneManager("main")->getSceneNode("Fish");
   }
@@ -42,42 +48,41 @@ public:
   {
     // Fill Here ----------------------------------------------
 	 
-	  
-	  if (mProfessorNode->getPosition().z < -250 || mProfessorNode->getPosition().z > 250)
+	  // Professor move
+	  if (mProfessorNode->getPosition().z < -1 * professorMaxPosition_z || mProfessorNode->getPosition().z > professorMaxPosition_z)
 	  {
-		  mProfessorNode->yaw(Degree(1.0f));
-		  rotateCount += 1.0f;
-		  if (rotateCount >= 180 )
+		  mProfessorNode->yaw(rotationSpeed);
+		  rotationCount += 1.0f;
+		  if (rotationCount >= 180 )
 		  {
-			  float x = mProfessorNode->getPosition().x;
-			  float y = mProfessorNode->getPosition().y;
-			  float z = mProfessorNode->getPosition().z > 0 ? 250.0f : -1 * 250.0f;
-			  Vector3 pos = Vector3(x, y, z);
+			  float professorPos_x = mProfessorNode->getPosition().x;
+			  float professorPos_y = mProfessorNode->getPosition().y;
+			  float professorPos_z = mProfessorNode->getPosition().z > 0 ? 250.0f : -1 * 250.0f;
+			  Vector3 pos = Vector3(professorPos_x, professorPos_y, professorPos_z);
 			  mProfessorNode->setPosition(pos);
-			  mProfessorNode->translate(Vector3(0.0f, 0.0f,2.0f),Node::TransformSpace::TS_LOCAL);
-			  rotateCount = 0;
+
+			  mProfessorNode->translate(movingSpeed, Node::TransformSpace::TS_LOCAL);
+			  rotationCount = 0;
 		  }
 		  
 	  }
 	  else
 	  {
-		  mProfessorNode->translate(Vector3(0.0f, 0.0f, 2.0f), Node::TransformSpace::TS_LOCAL);
+		  mProfessorNode->translate(movingSpeed, Node::TransformSpace::TS_LOCAL);
 		  
 	  }
 
-	  //--- fish
+	  //--- Fish rotate
 
-		  mEmptyNode->yaw(Degree(-1.0f));
+		  mEmptyNode->yaw(fishRotationSpeed);
 		  
-		  float x = mProfessorNode->getPosition().x;
-		  float y = mProfessorNode->getPosition().y;
-		  float z = mProfessorNode->getPosition().z;
+		  float fishPos_x = mProfessorNode->getPosition().x;
+		  float fishPos_y = mProfessorNode->getPosition().y;
+		  float fishPos_z = mProfessorNode->getPosition().z;
 		  
-		  Vector3 pos = Vector3(x, y, z);
+		  Vector3 pos = Vector3(fishPos_x, fishPos_y, fishPos_z);
 		  mEmptyNode->setPosition(pos);
 		  
-		 
-
     // --------------------------------------------------------
 
     return true;
@@ -108,7 +113,7 @@ public:
 
   void go(void)
   {
-    // OGREÀÇ ¸ÞÀÎ ·çÆ® ¿ÀºêÁ§Æ® »ý¼º
+    // OGREÃ€Ã‡ Â¸ÃžÃ€ÃŽ Â·Ã§Ã†Â® Â¿Ã€ÂºÃªÃÂ§Ã†Â® Â»Ã½Â¼Âº
 #if !defined(_DEBUG)
     mRoot = new Root("plugins.cfg", "ogre.cfg", "ogre.log");
 #else
@@ -116,7 +121,7 @@ public:
 #endif
 
 
-    // ÃÊ±â ½ÃÀÛÀÇ ÄÁÇÇ±Ô·¹ÀÌ¼Ç ¼³Á¤ - ogre.cfg ÀÌ¿ë
+    // ÃƒÃŠÂ±Ã¢ Â½ÃƒÃ€Ã›Ã€Ã‡ Ã„ÃÃ‡Ã‡Â±Ã”Â·Â¹Ã€ÃŒÂ¼Ã‡ Â¼Â³ÃÂ¤ - ogre.cfg Ã€ÃŒÂ¿Ã«
     if (!mRoot->restoreConfig()) {
       if (!mRoot->showConfigDialog()) return;
     }
@@ -124,7 +129,7 @@ public:
     mWindow = mRoot->initialise(true, "Rotate : Copyleft by Dae-Hyun Lee");
 
 
-    // ESC key¸¦ ´­·¶À» °æ¿ì, ¿À¿ì°Å ¸ÞÀÎ ·»´õ¸µ ·çÇÁÀÇ Å»ÃâÀ» Ã³¸®
+    // ESC keyÂ¸Â¦ Â´Â­Â·Â¶Ã€Â» Â°Ã¦Â¿Ã¬, Â¿Ã€Â¿Ã¬Â°Ã… Â¸ÃžÃ€ÃŽ Â·Â»Â´ÃµÂ¸Âµ Â·Ã§Ã‡ÃÃ€Ã‡ Ã…Â»ÃƒÃ¢Ã€Â» ÃƒÂ³Â¸Â®
     size_t windowHnd = 0;
     std::ostringstream windowHndStr;
     OIS::ParamList pl;
@@ -155,7 +160,7 @@ public:
 
     mSceneMgr->setAmbientLight(ColourValue(1.0f, 1.0f, 1.0f));
 
-    // ÁÂÇ¥Ãà Ç¥½Ã
+    // ÃÃ‚Ã‡Â¥ÃƒÃ  Ã‡Â¥Â½Ãƒ
     Ogre::Entity* mAxesEntity = mSceneMgr->createEntity("Axes", "axes.mesh");
     mSceneMgr->getRootSceneNode()->createChildSceneNode("AxesNode",Ogre::Vector3(0,0,0))->attachObject(mAxesEntity);
     mSceneMgr->getSceneNode("AxesNode")->setScale(6, 6, 6);
