@@ -26,7 +26,7 @@ public:
 class MainListener : public FrameListener {
   OIS::Keyboard *mKeyboard;
   Root* mRoot;
-  SceneNode *mProfessorNode, *mFishNode;
+  SceneNode *mProfessorNode, *mFishNode, *mEmptyNode;
 
   float rotateCount = 0.0f;
 
@@ -34,30 +34,26 @@ public:
   MainListener(Root* root, OIS::Keyboard *keyboard) : mKeyboard(keyboard), mRoot(root) 
   {
     mProfessorNode = mRoot->getSceneManager("main")->getSceneNode("Professor");
+	mEmptyNode = mRoot->getSceneManager("main")->getSceneNode("Empty");
     mFishNode = mRoot->getSceneManager("main")->getSceneNode("Fish");
   }
 
   bool frameStarted(const FrameEvent &evt)
   {
     // Fill Here ----------------------------------------------
-	  static float x = 0.0f;
-	  static float z = 0.0f;
-	  static float deg = -90.0f;
-
-	  x = 100.0f * cos(deg / 360.0f * 2.0f * 3.14f);
-	  z = -100.0f * sin(deg / 360.0f * 2.0f * 3.14f);
-	  deg = (deg < 0.0f) ? 360.0f : deg - 5.5f;
-
-
-	  mFishNode->setPosition(x, 0.0f, z);
-	  mFishNode->lookAt(Vector3(0, 0, 0), Node::TransformSpace::TS_PARENT, Vector3::NEGATIVE_UNIT_Z);
+	 
 	  
 	  if (mProfessorNode->getPosition().z < -250 || mProfessorNode->getPosition().z > 250)
 	  {
-		  mProfessorNode->yaw(Degree(2.0f));
-		  rotateCount += 2.0f;
+		  mProfessorNode->yaw(Degree(1.0f));
+		  rotateCount += 1.0f;
 		  if (rotateCount >= 180 )
 		  {
+			  float x = mProfessorNode->getPosition().x;
+			  float y = mProfessorNode->getPosition().y;
+			  float z = mProfessorNode->getPosition().z > 0 ? 250.0f : -1 * 250.0f;
+			  Vector3 pos = Vector3(x, y, z);
+			  mProfessorNode->setPosition(pos);
 			  mProfessorNode->translate(Vector3(0.0f, 0.0f,2.0f),Node::TransformSpace::TS_LOCAL);
 			  rotateCount = 0;
 		  }
@@ -65,9 +61,22 @@ public:
 	  }
 	  else
 	  {
-		  mProfessorNode->translate(Vector3(0.0f, 0.0f,2.0f), Node::TransformSpace::TS_LOCAL);
+		  mProfessorNode->translate(Vector3(0.0f, 0.0f, 2.0f), Node::TransformSpace::TS_LOCAL);
 		  
 	  }
+
+	  //--- fish
+
+		  mEmptyNode->yaw(Degree(-1.0f));
+		  
+		  float x = mProfessorNode->getPosition().x;
+		  float y = mProfessorNode->getPosition().y;
+		  float z = mProfessorNode->getPosition().z;
+		  
+		  Vector3 pos = Vector3(x, y, z);
+		  mEmptyNode->setPosition(pos);
+		  
+		 
 
     // --------------------------------------------------------
 
@@ -157,11 +166,16 @@ public:
     Entity* entity1 = mSceneMgr->createEntity("Professor", "DustinBody.mesh");
     SceneNode* node1 = mSceneMgr->getRootSceneNode()->createChildSceneNode("Professor", Vector3(0.0f, 0.0f, 0.0f));
     node1->attachObject(entity1);
+
+	Entity* entity2 = mSceneMgr->createEntity("Empty","fish.mesh");
+	SceneNode* node2 = mSceneMgr->getRootSceneNode()->createChildSceneNode("Empty", Vector3(0.0f, 0.0f, 0.0f));
+	node2->attachObject(entity2);
+	mSceneMgr->getSceneNode("Empty")->setScale(0.1, 0.1, 0.1);
 	
-    Entity* entity2 = mSceneMgr->createEntity("Fish", "fish.mesh");
-    SceneNode* node2 = node1->createChildSceneNode("Fish", Vector3(100.0f, 0.0f, 0.0f));
-    node2->attachObject(entity2);
-	mSceneMgr->getSceneNode("Fish")->setScale(5, 5, 5);
+    Entity* entity3 = mSceneMgr->createEntity("Fish", "fish.mesh");
+    SceneNode* node3 = node2->createChildSceneNode("Fish", Vector3(0.0f, 0.0f, 1000.0f));
+    node3->attachObject(entity3);
+	mSceneMgr->getSceneNode("Fish")->setScale(60, 60, 60);
 
 
     mESCListener =new ESCListener(mKeyboard);
