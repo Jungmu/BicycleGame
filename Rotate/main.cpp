@@ -38,10 +38,10 @@ class MainListener : public FrameListener {
 public:
   MainListener(Root* root, OIS::Keyboard *keyboard) : mKeyboard(keyboard), mRoot(root) 
   {
-    mProfessorNode = mRoot->getSceneManager("main")->getSceneNode("Professor");
+    	mProfessorNode = mRoot->getSceneManager("main")->getSceneNode("Professor");
 	// 빈노드는 물고기의 부모
 	mEmptyNode = mRoot->getSceneManager("main")->getSceneNode("Empty");
-    mFishNode = mRoot->getSceneManager("main")->getSceneNode("Fish");
+	mFishNode = mRoot->getSceneManager("main")->getSceneNode("Fish");
   }
 
   bool frameStarted(const FrameEvent &evt)
