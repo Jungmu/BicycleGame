@@ -29,6 +29,7 @@ public:
 	InputController(Root* root, OIS::Keyboard *keyboard, OIS::Mouse *mouse) : mRoot(root), mKeyboard(keyboard), mMouse(mouse)
   {
     mBicycleNode = mRoot->getSceneManager("main")->getSceneNode("Bicycle");
+	mEmptyNode = mRoot->getSceneManager("main")->getSceneNode("Empty");
 	mBicycleEntity = mRoot->getSceneManager("main")->getEntity("Bicycle");
     mCamera = mRoot->getSceneManager("main")->getCamera("main");
 	mAnimationState = mBicycleEntity->getAnimationState("Idle");
@@ -55,9 +56,9 @@ public:
 	  {
 		  
 	  }
-	  Vector3 CameraPos(mBicycleNode->getPosition().x, 300.0f, mBicycleNode->getPosition().z-500);
-	  mCamera->setPosition(CameraPos);
-	  mCamera->lookAt(mBicycleNode->getPosition());
+	  
+	  mCamera->setPosition(mEmptyNode->_getDerivedPosition().x, 300.0f, mEmptyNode->_getDerivedPosition().z);
+	  mCamera->lookAt(mBicycleNode->getPosition().x, 200.0f, mBicycleNode->getPosition().z);
 	  
       return mContinue;
   }
@@ -117,7 +118,6 @@ public:
 		  {
 			  PlayerRunState = PLAYER_STOP;
 			  mBicycleEntity = mRoot->getSceneManager("main")->getEntity("Bicycle");
-			  mCamera = mRoot->getSceneManager("main")->getCamera("main");
 			  mAnimationState = mBicycleEntity->getAnimationState("Idle");
 		  }
 	  }
@@ -138,7 +138,7 @@ private:
   OIS::Keyboard* mKeyboard;
   OIS::Mouse* mMouse;
   Camera* mCamera;
-  SceneNode* mBicycleNode;
+  SceneNode* mBicycleNode, *mEmptyNode;
   Ogre::Entity *mBicycleEntity;
   Ogre::AnimationState* mAnimationState;
 };
@@ -196,6 +196,23 @@ public:
 
     mSceneMgr->setAmbientLight(ColourValue(1.0f, 1.0f, 1.0f));
 
+	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"ground",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		plane,
+		15000, 15000, 20, 20,
+		true,
+		1, 50, 50,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* groundEntity = mSceneMgr->createEntity("ground");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(groundEntity);
+	groundEntity->setCastShadows(false);
+	groundEntity->setMaterialName("Examples/Rockwall");
+
+	mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
+
+
     // ÁÂÇ¥Ãà Ç¥½Ã
     Ogre::Entity* mAxesEntity = mSceneMgr->createEntity("Axes", "axes.mesh");
     mSceneMgr->getRootSceneNode()->createChildSceneNode("AxesNode",Ogre::Vector3(0,0,0))->attachObject(mAxesEntity);
@@ -208,6 +225,10 @@ public:
     SceneNode* node1 = mSceneMgr->getRootSceneNode()->createChildSceneNode("Bicycle", Vector3(0.0f, 0.0f, 0.0f));
 	node1->yaw(Degree(180));
 	node1->attachObject(entity1);
+
+	Entity* emptyentity = mSceneMgr->createEntity("Empty", "Empty.Mesh");
+	SceneNode* emptyNode = node1->createChildSceneNode("Empty", Vector3(0.0f, 300.0f, -500.0f));
+	emptyNode->attachObject(emptyentity);
 
     size_t windowHnd = 0;
     std::ostringstream windowHndStr;
