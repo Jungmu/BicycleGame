@@ -22,23 +22,15 @@ public:
   }
 };
 
-
 class MainListener : public FrameListener {
   OIS::Keyboard *mKeyboard;
   Root* mRoot;
   SceneNode *mProfessorNode, *mFishNode, *mEmptyNode;
 
-  const Vector3 movingSpeed = Vector3(0.0f, 0.0f, 2.0f);
-  const Degree rotationSpeed = Degree(1.0f);
-  const Degree fishRotationSpeed = Degree(-1.0f);
-  const float professorMaxPosition_z = 250.0f;
-  
-  float rotationCount = 0.0f;
-
 public:
   MainListener(Root* root, OIS::Keyboard *keyboard) : mKeyboard(keyboard), mRoot(root) 
   {
-    	mProfessorNode = mRoot->getSceneManager("main")->getSceneNode("Professor");
+    mProfessorNode = mRoot->getSceneManager("main")->getSceneNode("Professor");
 	// 빈노드는 물고기의 부모
 	mEmptyNode = mRoot->getSceneManager("main")->getSceneNode("Empty");
 	mFishNode = mRoot->getSceneManager("main")->getSceneNode("Fish");
@@ -46,44 +38,50 @@ public:
 
   bool frameStarted(const FrameEvent &evt)
   {
-    // Fill Here ----------------------------------------------
-	 
-	  // Professor move
+	  static float rotationCount = 0.0f;
+	  static float movingSpeed = 1.0f;
+	  static float rotationSpeed = 180.0f;
+	  static float fishRotationSpeed = -180.0f;
+	  static float professorMaxPosition_z = 250.0f;
+	  
+	  // 범위를 벗어나면 교수는 회전한 뒤 이동한다.
 	  if (mProfessorNode->getPosition().z < -1 * professorMaxPosition_z || mProfessorNode->getPosition().z > professorMaxPosition_z)
 	  {
-		  mProfessorNode->yaw(rotationSpeed);
-		  rotationCount += 1.0f;
+		  mProfessorNode->yaw(Degree(rotationSpeed * evt.timeSinceLastFrame));
+		  rotationCount += rotationSpeed * evt.timeSinceLastFrame;
+		  
+		  Vector3 professorPos = mProfessorNode->getPosition();
+		  // 회전을 다해서 누적 회전각이 180을 넘어가면 앞으로 전진하여 범위 안으로 들어오게 된다.
 		  if (rotationCount >= 180 )
-		  {
-			  float professorPos_x = mProfessorNode->getPosition().x;
-			  float professorPos_y = mProfessorNode->getPosition().y;
-			  float professorPos_z = mProfessorNode->getPosition().z > 0 ? 250.0f : -1 * 250.0f;
-			  Vector3 pos = Vector3(professorPos_x, professorPos_y, professorPos_z);
+		  {			  
+			  // 250범위를 약간 넘어갈 수 있기 때문에 이를 250.0f 라는 정확한 좌표로 지정을 해준다.
+			  professorPos.z = mProfessorNode->getPosition().z > 0 ? 250.0f : -1 * 250.0f;
+			  Vector3 pos = professorPos;
 			  mProfessorNode->setPosition(pos);
-
-			  mProfessorNode->translate(movingSpeed, Node::TransformSpace::TS_LOCAL);
+			  // 회전각이 evt.timeSinceLastFrame 과 곱해지기때문에 정확히 180도를 돌지 않게된다. 
+			  // 그래서 180도를 돈 상태로 만들어준다.
+			  if (250.0f == professorPos.z)
+			  {
+				  mProfessorNode->resetOrientation();
+				  mProfessorNode->yaw(Degree(180));
+			  }
+			  else
+			  {
+				  mProfessorNode->resetOrientation();
+			  }
+			  // 회전이 이루어 졌으므로 한걸음 앞으로 나아가서 범위 안으로 들어간다.
+			  mProfessorNode->translate(0.0f, 0.0f, movingSpeed * evt.timeSinceLastFrame, Node::TransformSpace::TS_LOCAL);
 			  rotationCount = 0;
-		  }
-		  
+		  }		  
 	  }
-	  else
+	  else // 범위를 벗어나지 않았다면 교수는 그저 앞으로 전진한다.
 	  {
-		  mProfessorNode->translate(movingSpeed, Node::TransformSpace::TS_LOCAL);
-		  
+		  mProfessorNode->translate(0.0f, 0.0f, movingSpeed, Node::TransformSpace::TS_LOCAL);
 	  }
-
-	  //--- Fish rotate
-
-		  mEmptyNode->yaw(fishRotationSpeed);
-		  
-		  float fishPos_x = mProfessorNode->getPosition().x;
-		  float fishPos_y = mProfessorNode->getPosition().y;
-		  float fishPos_z = mProfessorNode->getPosition().z;
-		  
-		  Vector3 pos = Vector3(fishPos_x, fishPos_y, fishPos_z);
-		  mEmptyNode->setPosition(pos);
-		  
-    // --------------------------------------------------------
+	  // 물고기는 일정한 속도로 교수 주변을 계속 회전하며 ( 물고기의 부모 노드가 회전하는 것 )
+	  // 물고기의 부모 노드는 항상 교수노드와 같은 위치에 존재한다.
+	  mEmptyNode->yaw(Degree(fishRotationSpeed * evt.timeSinceLastFrame));
+	  mEmptyNode->setPosition(mProfessorNode->getPosition());
 
     return true;
   }
