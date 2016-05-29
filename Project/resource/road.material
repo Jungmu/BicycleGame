@@ -1,0 +1,39 @@
+material road0
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture 0.jpg
+			}
+		}
+	}
+}
+material road1
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture 1.jpg
+			}
+		}
+	}
+}
+material road2
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture 2.jpg
+			}
+		}
+	}
+}

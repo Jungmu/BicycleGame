@@ -36,7 +36,7 @@ private:
 	void _setLights(void);
 	void _drawGroundPlane(void);
 	void _drawGridPlane(void);
-
+	void _drawBuilding(void);
 
 	static PlayState mPlayState;
 
