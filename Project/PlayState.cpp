@@ -10,7 +10,10 @@ PlayState PlayState::mPlayState;
 
 void PlayState::enter(void)
 {
-	
+	angleLock = true;
+	keyRight = false;
+	keyLeft = false;
+	keyRun = false;
 	BicycleSpeed = 0.0f;
 
 	mRoot = Root::getSingletonPtr();
@@ -33,9 +36,9 @@ void PlayState::enter(void)
 	mCharacterRoot = mSceneMgr->getRootSceneNode()->createChildSceneNode("ProfessorRoot");
 	mCharacterYaw = mCharacterRoot->createChildSceneNode("ProfessorYaw");
 
-	mCameraYaw = mCharacterRoot->createChildSceneNode("CameraYaw", Vector3(0.0f, 120.0f, 0.0f));
+	mCameraYaw = mCharacterYaw->createChildSceneNode("CameraYaw", Vector3(0.0f, 120.0f, 0.0f));
 	mCameraPitch = mCameraYaw->createChildSceneNode("CameraPitch");
-	mCameraHolder = mCameraPitch->createChildSceneNode("CameraHolder", Vector3(0.0f, 80.0f, 500.0f));
+	mCameraHolder = mCameraPitch->createChildSceneNode("CameraHolder", Vector3(0.0f, 80.0f, -500.0f));
 
 	mCharacterEntity = mSceneMgr->createEntity("Professor", "DustinBody.mesh");
 	mCharacterYaw->attachObject(mCharacterEntity);
@@ -51,26 +54,43 @@ void PlayState::enter(void)
 
 void PlayState::BicycleTurn(GameManager* game, const FrameEvent &evt)
 {
-	if (game->mDatacollector->roll_w > 10)
+	if (game->mDatacollector->onArm)
 	{
-		mCharacterYaw->yaw(Degree(90 * evt.timeSinceLastFrame));
-	}
-	else if (game->mDatacollector->roll_w < 8)
-	{
-		mCharacterYaw->yaw(Degree(-90 * evt.timeSinceLastFrame));
+		if (game->mDatacollector->roll_w > 10)
+		{
+			mCharacterYaw->yaw(Degree(90 * evt.timeSinceLastFrame));
+		}
+		else if (game->mDatacollector->roll_w < 8)
+		{
+			mCharacterYaw->yaw(Degree(-90 * evt.timeSinceLastFrame));
+		}
 	}
 }
 void PlayState::BicycleRun(GameManager* game, const FrameEvent &evt)
 {
-	if (game->mDatacollector->currentPose == myo::Pose::fingersSpread)
+	if (BicycleSpeed < 500)
 	{
-		if (mAnimationState->getAnimationName() == "Idle")
+		mAnimationState->setEnabled(false);
+		mAnimationState = mCharacterEntity->getAnimationState("Walk");
+		mAnimationState->setEnabled(true);
+		mAnimationState->setLoop(true);
+	}
+	if (BicycleSpeed > 500)
+	{
+		mAnimationState->setEnabled(false);
+		mAnimationState = mCharacterEntity->getAnimationState("Run");
+		mAnimationState->setEnabled(true);
+		mAnimationState->setLoop(true);
+	}
+
+	//if (game->mDatacollector->currentPose == myo::Pose::fingersSpread)
+	// 테스트용으로 키보드를 이용해 컨트롤 하도록 잠시 수정
+	if (keyRun)
+	{
+		if (BicycleSpeed < 3000)
 		{
-			mAnimationState = mCharacterEntity->getAnimationState("Run");
-			mAnimationState->setEnabled(true);
-			mAnimationState->setLoop(true);
-		}
-		BicycleSpeed += 1.0f;
+			BicycleSpeed += 1.0f;
+		}		
 	}
 	else
 	{
@@ -84,6 +104,7 @@ void PlayState::BicycleRun(GameManager* game, const FrameEvent &evt)
 		}
 		if (BicycleSpeed == 0)
 		{
+			mAnimationState->setEnabled(false);
 			mAnimationState = mCharacterEntity->getAnimationState("Idle");
 			mAnimationState->setEnabled(true);
 			mAnimationState->setLoop(true);
@@ -118,6 +139,30 @@ bool PlayState::frameStarted(GameManager* game, const FrameEvent& evt)
 	mAnimationState->addTime(evt.timeSinceLastFrame);
 	BicycleTurn(game,evt);
 	BicycleRun(game,evt);
+	//test code 실제 게임에서는 키보드로 캐릭터를 움직이지 않음
+	if (keyRight)
+	{
+		if (!keyRun)
+		{
+			mCharacterYaw->yaw(Degree(-360 * evt.timeSinceLastFrame));
+		}
+		else
+		{
+			mCharacterYaw->yaw(Degree(-90 * evt.timeSinceLastFrame));
+		}
+		
+	}
+	else if (keyLeft)
+	{
+		if (!keyRun)
+		{
+			mCharacterYaw->yaw(Degree(360 * evt.timeSinceLastFrame));
+		}
+		else
+		{
+			mCharacterYaw->yaw(Degree(90 * evt.timeSinceLastFrame));
+		}
+	}
 	return true;
 }
 
@@ -146,6 +191,20 @@ bool PlayState::frameEnded(GameManager* game, const FrameEvent& evt)
 
 bool PlayState::keyReleased(GameManager* game, const OIS::KeyEvent &e)
 {
+	switch (e.key)
+	{
+	case OIS::KC_UP:
+		keyRun = false;
+		break;
+	case OIS::KC_RIGHT:
+		keyRight = false;
+		break;
+	case OIS::KC_LEFT:
+		keyLeft = false;
+		break;
+	default:
+		break;
+	}
 	return true;
 }
 
@@ -154,8 +213,16 @@ bool PlayState::keyPressed(GameManager* game, const OIS::KeyEvent &e)
 	// Fill Here -------------------------------------------
 	switch (e.key)
 	{
+	case OIS::KC_UP:
+		keyRun = true;
+		break;
+	case OIS::KC_RIGHT:
+		keyRight = true;
+		break;
+	case OIS::KC_LEFT:
+		keyLeft = true;
+		break;
 	case OIS::KC_O:
-
 		game->pushState(OptionState::getInstance());
 		break;
 	case OIS::KC_ESCAPE:
@@ -171,21 +238,25 @@ bool PlayState::keyPressed(GameManager* game, const OIS::KeyEvent &e)
 
 bool PlayState::mousePressed(GameManager* game, const OIS::MouseEvent &e, OIS::MouseButtonID id)
 {
+	angleLock = false;
 	return true;
 }
 
 bool PlayState::mouseReleased(GameManager* game, const OIS::MouseEvent &e, OIS::MouseButtonID id)
 {
+	angleLock = true;
 	return true;
 }
 
 
 bool PlayState::mouseMoved(GameManager* game, const OIS::MouseEvent &e)
 {
-	mCameraYaw->yaw(Degree(-e.state.X.rel));
-	mCameraPitch->pitch(Degree(-e.state.Y.rel));
-
-	mCameraHolder->translate(Ogre::Vector3(0, 0, -e.state.Z.rel * 0.1f));
+	if (!angleLock)
+	{
+		mCameraYaw->yaw(Degree(-e.state.X.rel));
+		mCameraPitch->pitch(Degree(-e.state.Y.rel));
+		mCameraHolder->translate(Ogre::Vector3(0, 0, -e.state.Z.rel * 0.1f));
+	}	
 	return true;
 }
 

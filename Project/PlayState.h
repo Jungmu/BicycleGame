@@ -5,6 +5,7 @@
 class PlayState : public GameState
 {
 public:
+	bool keyRun,keyLeft,keyRight,angleLock;
 	float BicycleSpeed;
 
 	void enter(void);
