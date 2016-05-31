@@ -20,3 +20,18 @@ material Material#25
 	}
 
 }
+material BicycleLogo
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture Bicycle.PNG
+			}
+		}
+
+	}
+
+}

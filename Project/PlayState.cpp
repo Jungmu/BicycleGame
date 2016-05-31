@@ -23,6 +23,9 @@ void PlayState::enter(void)
 	mCamera = mSceneMgr->getCamera("main");
 	mCamera->setPosition(Ogre::Vector3::ZERO);
 
+	mMapCamera = mSceneMgr->getCamera("MapCamera");
+	mMapCamera->setVisible(true);
+	_drawMapPlane();
 	_drawGridPlane();
 	_setLights();
 	_drawGroundPlane();
@@ -35,17 +38,29 @@ void PlayState::enter(void)
 
 	mCharacterRoot = mSceneMgr->getRootSceneNode()->createChildSceneNode("ProfessorRoot");
 	mCharacterYaw = mCharacterRoot->createChildSceneNode("ProfessorYaw");
+	mMapCharector = mSceneMgr->getRootSceneNode()->createChildSceneNode("MapCharectorNode", Vector3(50000.0f, 0.0f, 0.0f));
 
 	mCameraYaw = mCharacterYaw->createChildSceneNode("CameraYaw", Vector3(0.0f, 120.0f, 0.0f));
 	mCameraPitch = mCameraYaw->createChildSceneNode("CameraPitch");
 	mCameraHolder = mCameraPitch->createChildSceneNode("CameraHolder", Vector3(0.0f, 80.0f, -500.0f));
 
+	mMapCharctorEntity = mSceneMgr->createEntity("MapCharector", "DustinBody.mesh");
 	mCharacterEntity = mSceneMgr->createEntity("Professor", "DustinBody.mesh");
+	mMapCharector->attachObject(mMapCharctorEntity);
 	mCharacterYaw->attachObject(mCharacterEntity);
+	
+	mMapCharctorEntity->setCastShadows(false);
+	mMapCharector->scale(Vector3(10));
+	mMapCharector->setInheritOrientation(false);
+	mMapCharector->setInheritScale(false);
 	mCharacterEntity->setCastShadows(true);
 
 	mCameraHolder->attachObject(mCamera);
 	mCamera->lookAt(mCameraYaw->getPosition());
+
+	mMapCamera->setPosition(50000.0f, 2000.0f, 1.0f);
+	mMapCamera->lookAt(50000.0f, -10000.0f, 0.0f);
+	
 
 	mAnimationState = mCharacterEntity->getAnimationState("Idle");
 	mAnimationState->setLoop(true);
@@ -111,6 +126,7 @@ void PlayState::BicycleRun(GameManager* game, const FrameEvent &evt)
 		}
 	}
 	mCharacterYaw->translate(0.0f, 0.0f, BicycleSpeed * evt.timeSinceLastFrame, Node::TS_LOCAL);
+	mMapCharector->setPosition(mCharacterYaw->getPosition().x + 50000.0f,-10000.0f, mCharacterYaw->getPosition().z);
 }
 
 void PlayState::exit(void)
@@ -279,6 +295,162 @@ void PlayState::_drawBuilding(void)
 	BuildingNode->attachObject(Building);
 	Building->setCastShadows(true);
 	mSceneMgr->getSceneNode("BuildingNode")->setScale(Ogre::Vector3(10, 10, 10));
+}
+void PlayState::_drawMapPlane(void)
+{
+	//---------------------------
+
+	Ogre::Plane Mvplane1(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"MVerticalRoad1",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Mvplane1,
+		1000, 7000, 20, 20,
+		true,
+		1, 1, 7,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* MVerticalRoad1 = mSceneMgr->createEntity("MVerticalRoad1");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(55000, -10000, 0))->attachObject(MVerticalRoad1);
+	MVerticalRoad1->setCastShadows(false);
+	MVerticalRoad1->setMaterialName("road1");
+
+	//--------------------------
+
+	Ogre::Plane Mvplane2(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"MVerticalRoad2",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Mvplane2,
+		1000, 5000, 20, 20,
+		true,
+		1, 1, 5,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* MVerticalRoad2 = mSceneMgr->createEntity("MVerticalRoad2");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(45000, -10000, -1000))->attachObject(MVerticalRoad2);
+	MVerticalRoad2->setCastShadows(false);
+	MVerticalRoad2->setMaterialName("road1");
+
+	//--------------------------
+
+	Ogre::Plane Mvplane3(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"MVerticalRoad3",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Mvplane3,
+		1000, 1000, 20, 20,
+		true,
+		1, 1, 1,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* MVerticalRoad3 = mSceneMgr->createEntity("MVerticalRoad3");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(49000, -10000, 3000))->attachObject(MVerticalRoad3);
+	MVerticalRoad3->setCastShadows(false);
+	MVerticalRoad3->setMaterialName("road1");
+
+
+	//--------------------------
+
+	Ogre::Plane Mhplane1(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"MHorizontalRoad1",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Mhplane1,
+		9000, 1000, 20, 20,
+		true,
+		1, 9, 1,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* MHorizontalRoad1 = mSceneMgr->createEntity("MHorizontalRoad1");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(50000, -10000, -4000))->attachObject(MHorizontalRoad1);
+	MHorizontalRoad1->setCastShadows(false);
+	MHorizontalRoad1->setMaterialName("road2");
+
+
+	//--------------------------
+
+	Ogre::Plane Mhplane2(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"MHorizontalRoad2",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Mhplane2,
+		3000, 1000, 20, 20,
+		true,
+		1, 3, 1,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* MHorizontalRoad2 = mSceneMgr->createEntity("MHorizontalRoad2");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(47000, -10000, 2000))->attachObject(MHorizontalRoad2);
+	MHorizontalRoad2->setCastShadows(false);
+	MHorizontalRoad2->setMaterialName("road2");
+
+	//--------------------------
+
+	Ogre::Plane Mhplane3(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"MHorizontalRoad3",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Mhplane3,
+		5000, 1000, 20, 20,
+		true,
+		1, 5, 1,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* MHorizontalRoad3 = mSceneMgr->createEntity("MHorizontalRoad3");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(52000, -10000, 4000))->attachObject(MHorizontalRoad3);
+	MHorizontalRoad3->setCastShadows(false);
+	MHorizontalRoad3->setMaterialName("road2");
+
+	//--------------------------
+
+	Ogre::Plane Mcplane(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"Mconer",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Mcplane,
+		1000, 1000, 20, 20,
+		true,
+		1, 1, 1,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* Mconer1 = mSceneMgr->createEntity("Mconer");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(45000, -10000, 2000))->attachObject(Mconer1);
+	Mconer1->setCastShadows(false);
+	Mconer1->setMaterialName("road0");
+
+
+
+	//--------------------------
+
+	Ogre::Entity* Mconer2 = mSceneMgr->createEntity("Mconer");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode("Mconer2", Ogre::Vector3(49000, -10000, 2000))->attachObject(Mconer2);
+	mSceneMgr->getSceneNode("Mconer2")->yaw(Degree(180));
+	Mconer2->setCastShadows(false);
+	Mconer2->setMaterialName("road0");
+
+	//--------------------------
+
+	Ogre::Entity* Mconer3 = mSceneMgr->createEntity("Mconer");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(49000, -10000, 4000))->attachObject(Mconer3);
+	Mconer3->setCastShadows(false);
+	Mconer3->setMaterialName("road0");
+
+	//--------------------------
+
+	Ogre::Entity* Mconer4 = mSceneMgr->createEntity("Mconer");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode("Mconer4", Ogre::Vector3(55000, -10000, -4000))->attachObject(Mconer4);
+	mSceneMgr->getSceneNode("Mconer4")->yaw(Degree(180));
+	Mconer4->setCastShadows(false);
+	Mconer4->setMaterialName("road0");
+
+	//--------------------------
+
+	Ogre::Entity* Mconer5 = mSceneMgr->createEntity("Mconer");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode("Mconer5", Ogre::Vector3(45000, -10000, -4000))->attachObject(Mconer5);
+	mSceneMgr->getSceneNode("Mconer5")->yaw(Degree(-90));
+	Mconer5->setCastShadows(false);
+	Mconer5->setMaterialName("road0");
+	//--------------------------
+
+	Ogre::Entity* Mconer6 = mSceneMgr->createEntity("Mconer");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode("Mconer6", Ogre::Vector3(55000, -10000, 4000))->attachObject(Mconer6);
+	mSceneMgr->getSceneNode("Mconer6")->yaw(Degree(90));
+	Mconer6->setCastShadows(false);
+	Mconer6->setMaterialName("road0");
 }
 void PlayState::_drawGroundPlane(void)
 {

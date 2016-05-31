@@ -38,14 +38,15 @@ private:
 	void _drawGroundPlane(void);
 	void _drawGridPlane(void);
 	void _drawBuilding(void);
-
+	void _drawMapPlane(void);
 	static PlayState mPlayState;
 
 	Ogre::Root *mRoot;
 	Ogre::RenderWindow* mWindow;
 	Ogre::SceneManager* mSceneMgr;
 	Ogre::Camera* mCamera;
-
+	Ogre::Camera* mMapCamera;
+	Ogre::Viewport* mMapViewport;
 	Ogre::Light *mLightP, *mLightD, *mLightS;
 
 	Ogre::SceneNode* mCharacterRoot;
@@ -53,9 +54,10 @@ private:
 	Ogre::SceneNode* mCameraHolder;
 	Ogre::SceneNode* mCameraYaw;
 	Ogre::SceneNode* mCameraPitch;
+	Ogre::SceneNode* mMapCharector;
 
 	Ogre::Entity* mCharacterEntity;
-
+	Ogre::Entity* mMapCharctorEntity;
 	Ogre::AnimationState* mAnimationState;
 
 	Ogre::Overlay*           mInformationOverlay;

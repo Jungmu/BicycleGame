@@ -40,6 +40,9 @@ public:
 
 private:
 	static TitleState mTitleState;
+	Ogre::Root *mRoot;
+	Ogre::SceneManager* mSceneMgr;
+	Ogre::Camera* mMapCamera;
 
 	bool mContinue;
 

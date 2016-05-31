@@ -7,6 +7,13 @@ TitleState TitleState::mTitleState;
 
 void TitleState::enter(void)
 {
+	mRoot = Root::getSingletonPtr();
+	mRoot->getAutoCreatedWindow()->resetStatistics();
+
+	mSceneMgr = mRoot->getSceneManager("main");
+	mMapCamera = mSceneMgr->getCamera("MapCamera");
+	mMapCamera->setVisible(false);
+
 	mContinue = true;
 	mTitleOverlay = OverlayManager::getSingleton().getByName("Overlay/Title");
 	mStartMsg = OverlayManager::getSingleton().getOverlayElement("StartMsg");
@@ -31,18 +38,7 @@ void TitleState::resume(void)
 
 bool TitleState::frameStarted(GameManager* game, const FrameEvent& evt)
 {
-	static float elapsed = 0.0f;
-
-	elapsed += evt.timeSinceLastFrame;
-
-	if ((int)(elapsed * 4) % 2)
-	{
-		mStartMsg->show();
-	}
-	else
-	{
-		mStartMsg->hide();
-	}
+	
 
 	return true;
 }

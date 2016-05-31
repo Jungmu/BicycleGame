@@ -71,7 +71,8 @@ private:
 	Ogre::Camera* mCamera;
 	Ogre::Viewport* mViewport;
 
-
+	Ogre::Camera* mMapCamera;
+	Ogre::Viewport* mMapViewport;
 };
 
 

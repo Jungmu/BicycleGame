@@ -50,7 +50,12 @@ void GameManager::init(void)
 	mViewport->setBackgroundColour(ColourValue(0.0f, 0.0f, 0.0f));
 	mCamera->setAspectRatio(Real(mViewport->getActualWidth()) / Real(mViewport->getActualHeight()));
 
-	
+	mMapCamera = mSceneMgr->createCamera("MapCamera");
+	mMapViewport = mWindow->addViewport(mMapCamera, 1, 0.79, 0.01, 0.2, 0.2);
+	mMapViewport->setBackgroundColour(ColourValue(0.0f, 0.0f, 0.0f));
+	mMapCamera->setAspectRatio(Real(mMapViewport->getActualWidth()) / Real(mMapViewport->getActualHeight()));
+	mMapViewport->setOverlaysEnabled(false);
+	mMapViewport->setShadowsEnabled(false);
 
 	ResourceGroupManager::getSingleton().addResourceLocation("resource.zip", "Zip");
 	ResourceGroupManager::getSingleton().addResourceLocation("./", "FileSystem");
