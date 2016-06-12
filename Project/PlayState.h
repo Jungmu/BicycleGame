@@ -7,7 +7,7 @@ class PlayState : public GameState
 public:
 	bool keyRun,keyLeft,keyRight,angleLock;
 	float BicycleSpeed;
-
+	const int buildingNum = 47;
 	void enter(void);
 	void exit(void);
 

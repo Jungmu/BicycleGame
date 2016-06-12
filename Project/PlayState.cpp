@@ -37,7 +37,7 @@ void PlayState::enter(void)
 	mInformationOverlay->show();
 
 	mCharacterRoot = mSceneMgr->getRootSceneNode()->createChildSceneNode("ProfessorRoot");
-	mCharacterYaw = mCharacterRoot->createChildSceneNode("ProfessorYaw");
+	mCharacterYaw = mCharacterRoot->createChildSceneNode("ProfessorYaw",Vector3(5000.0f,0.0f,0.0f));
 	mMapCharector = mSceneMgr->getRootSceneNode()->createChildSceneNode("MapCharectorNode", Vector3(50000.0f, 0.0f, 0.0f));
 
 	mCameraYaw = mCharacterYaw->createChildSceneNode("CameraYaw", Vector3(0.0f, 120.0f, 0.0f));
@@ -56,7 +56,7 @@ void PlayState::enter(void)
 	mCharacterEntity->setCastShadows(true);
 
 	mCameraHolder->attachObject(mCamera);
-	mCamera->lookAt(mCameraYaw->getPosition());
+	mCamera->lookAt(Vector3(5000.0f, 120.0f, 0.0f));
 
 	mMapCamera->setPosition(50000.0f, 2000.0f, 1.0f);
 	mMapCamera->lookAt(50000.0f, -10000.0f, 0.0f);
@@ -71,11 +71,11 @@ void PlayState::BicycleTurn(GameManager* game, const FrameEvent &evt)
 {
 	if (game->mDatacollector->onArm)
 	{
-		if (game->mDatacollector->roll_w > 10)
+		if (game->mDatacollector->roll_w > 9)
 		{
 			mCharacterYaw->yaw(Degree(90 * evt.timeSinceLastFrame));
 		}
-		else if (game->mDatacollector->roll_w < 8)
+		else if (game->mDatacollector->roll_w < 7)
 		{
 			mCharacterYaw->yaw(Degree(-90 * evt.timeSinceLastFrame));
 		}
@@ -83,6 +83,10 @@ void PlayState::BicycleTurn(GameManager* game, const FrameEvent &evt)
 }
 void PlayState::BicycleRun(GameManager* game, const FrameEvent &evt)
 {
+	const int buildingNum = 47;
+	static std::string buildingStr;
+	static char c;
+	static Ogre::Vector3 BuildingCenter;
 	if (BicycleSpeed < 500)
 	{
 		mAnimationState->setEnabled(false);
@@ -98,9 +102,7 @@ void PlayState::BicycleRun(GameManager* game, const FrameEvent &evt)
 		mAnimationState->setLoop(true);
 	}
 
-	//if (game->mDatacollector->currentPose == myo::Pose::fingersSpread)
-	// 테스트용으로 키보드를 이용해 컨트롤 하도록 잠시 수정
-	if (keyRun)
+	if (game->mDatacollector->currentPose == myo::Pose::fingersSpread || keyRun)
 	{
 		if (BicycleSpeed < 3000)
 		{
@@ -126,6 +128,42 @@ void PlayState::BicycleRun(GameManager* game, const FrameEvent &evt)
 		}
 	}
 	mCharacterYaw->translate(0.0f, 0.0f, BicycleSpeed * evt.timeSinceLastFrame, Node::TS_LOCAL);
+	for (int i = 0; i < buildingNum; i++)
+	{
+		buildingStr = "BuildingNode";
+		buildingStr.append(itoa(i, &c, 10));
+		if (mCharacterYaw->_getWorldAABB().intersects(mSceneMgr->getSceneNode(buildingStr)->_getWorldAABB()))
+		{
+			mCharacterYaw->translate(0.0f, 0.0f, -1 * BicycleSpeed * evt.timeSinceLastFrame, Node::TS_LOCAL);
+			mCharacterYaw->yaw(Degree(60));
+			Ogre::Ray detectRay(mCharacterYaw->getPosition(), mCharacterYaw->getOrientation().zAxis());
+			if (!detectRay.intersects(mSceneMgr->getSceneNode(buildingStr)->_getWorldAABB()).first)
+			{
+				mCharacterYaw->yaw(Degree(-55));
+				if (BicycleSpeed > 5.0f)
+					BicycleSpeed -= 5.0f;
+			}
+			else
+			{
+				mCharacterYaw->yaw(Degree(-120));
+				detectRay.setDirection(mCharacterYaw->getOrientation().zAxis());
+				if (!detectRay.intersects(mSceneMgr->getSceneNode(buildingStr)->_getWorldAABB()).first)
+				{
+					mCharacterYaw->yaw(Degree(55));
+					if (BicycleSpeed > 5.0f)
+						BicycleSpeed -= 5.0f;
+				}
+				else{
+					mCharacterYaw->yaw(Degree(60));
+					mCharacterYaw->translate(0.0f, 0.0f, -2 * BicycleSpeed * evt.timeSinceLastFrame, Node::TS_LOCAL);
+					if (BicycleSpeed > 10.0f)
+						BicycleSpeed -= 10.0f;
+				}
+			}
+			
+			mCharacterYaw->translate(0.0f, 0.0f, BicycleSpeed * evt.timeSinceLastFrame, Node::TS_LOCAL);
+		}
+	}
 	mMapCharector->setPosition(mCharacterYaw->getPosition().x + 50000.0f,-10000.0f, mCharacterYaw->getPosition().z);
 }
 
@@ -134,7 +172,6 @@ void PlayState::exit(void)
 	// Fill Here -----------------------------
 	mSceneMgr->clearScene();
 	mInformationOverlay->hide();
-
 	// ---------------------------------------
 }
 
@@ -290,11 +327,75 @@ void PlayState::_setLights(void)
 }
 void PlayState::_drawBuilding(void)
 {
-	Ogre::SceneNode* BuildingNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode", Vector3(3000.0f, 500.0f, 0.0f));
-	Ogre::Entity* Building = mSceneMgr->createEntity("Building", "Box01.mesh");
-	BuildingNode->attachObject(Building);
-	Building->setCastShadows(true);
-	mSceneMgr->getSceneNode("BuildingNode")->setScale(Ogre::Vector3(10, 10, 10));
+	const int buildingNum = 47;
+	static std::string buildingStr;
+	static char c;
+	Ogre::SceneNode* BuildingNode[buildingNum];
+	BuildingNode[0] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode0", Vector3(-5500.0f, 500.0f, -5000.0f));
+	BuildingNode[1] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode1", Vector3(-4000.0f, 500.0f, -5000.0f));
+	BuildingNode[2] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode2", Vector3(-2500.0f, 500.0f, -5000.0f));
+	BuildingNode[3] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode3", Vector3(-1000.0f, 500.0f, -5000.0f));
+	BuildingNode[4] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode4", Vector3(500.0f, 500.0f, -5000.0f));
+	BuildingNode[5] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode5", Vector3(2000.0f, 500.0f, -5000.0f));
+	BuildingNode[6] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode6", Vector3(3500.0f, 500.0f, -5000.0f));
+	BuildingNode[7] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode7", Vector3(5000.0f, 500.0f, -5000.0f));
+	BuildingNode[8] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode8", Vector3(-4000.0f, 500.0f, -3000.0f));
+	BuildingNode[9] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode9", Vector3(-2500.0f, 500.0f, -3000.0f));
+	BuildingNode[27] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode27", Vector3(-1000.0f, 500.0f, -3000.0f));
+	BuildingNode[10] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode10", Vector3(500.0f,500.0f, -3000.0f));
+	BuildingNode[11] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode11", Vector3(2000.0f, 500.0f, -3000.0f));
+	BuildingNode[12] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode12", Vector3(3500.0f, 500.0f, -3000.0f));
+	BuildingNode[13] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode13", Vector3(-3500.0f, 500.0f, 1000.0f));
+	BuildingNode[14] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode14", Vector3(-2000.0f, 500.0f, 1000.0f));
+	BuildingNode[15] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode15", Vector3(-500.0f, 500.0f, 1000.0f));
+	BuildingNode[16] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode16", Vector3(-5500.0f, 500.0f, 3000.0f));
+	BuildingNode[17] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode17", Vector3(-4000.0f, 500.0f, 3000.0f));
+	BuildingNode[18] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode18", Vector3(-2500.0f, 500.0f, 3000.0f));
+	BuildingNode[19] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode19", Vector3(500.0f, 500.0f, 3000.0f));
+	BuildingNode[20] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode20", Vector3(2000.0f, 500.0f, 3000.0f));
+	BuildingNode[21] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode21", Vector3(3500.0f, 500.0f, 3000.0f));
+	BuildingNode[22] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode22", Vector3(-1000.0f, 500.0f, 5000.0f));
+	BuildingNode[23] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode23", Vector3(500.0f, 500.0f, 5000.0f));
+	BuildingNode[24] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode24", Vector3(2000.0f, 500.0f, 5000.0f));
+	BuildingNode[25] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode25", Vector3(3500.0f, 500.0f, 5000.0f));
+	BuildingNode[26] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode26", Vector3(5000.0f, 500.0f, 5000.0f));
+	///// 세로 건물
+	BuildingNode[28] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode28", Vector3(-6000.0f, 500.0f, -4000.0f));
+	BuildingNode[29] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode29", Vector3(-6000.0f, 500.0f, -2500.0f));
+	BuildingNode[30] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode30", Vector3(-6000.0f, 500.0f, -1000.0f));
+	BuildingNode[31] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode31", Vector3(-6000.0f, 500.0f, 500.0f));
+	BuildingNode[32] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode32", Vector3(-6000.0f, 500.0f, 2000.0f));
+	BuildingNode[33] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode33", Vector3(-4000.0f, 500.0f, -1500.0f));
+	BuildingNode[34] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode34", Vector3(-4000.0f, 500.0f, 0.0f));
+	BuildingNode[35] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode35", Vector3(0.0f, 500.0f, 2000.0f));
+	BuildingNode[36] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode36", Vector3(6000.0f, 500.0f, -4000.0f));
+	BuildingNode[37] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode37", Vector3(6000.0f, 500.0f, -2500.0f));
+	BuildingNode[38] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode38", Vector3(6000.0f, 500.0f, -1000.0f));
+	BuildingNode[39] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode39", Vector3(6000.0f, 500.0f, 500.0f));
+	BuildingNode[40] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode40", Vector3(6000.0f, 500.0f, 2000.0f));
+	BuildingNode[41] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode41", Vector3(6000.0f, 500.0f, 3500.0f));
+	BuildingNode[42] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode42", Vector3(4000.0f, 500.0f, -1500.0f));
+	BuildingNode[43] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode43", Vector3(4000.0f, 500.0f, 0.0f));
+	BuildingNode[44] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode44", Vector3(4000.0f, 500.0f, 1500.0f));
+	BuildingNode[45] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode45", Vector3(4000.0f, 500.0f, 3000.0f));
+	BuildingNode[46] = mSceneMgr->getRootSceneNode()->createChildSceneNode("BuildingNode46", Vector3(-2000.0f, 500.0f, 4000.0f));
+	
+	for (int i = 28; i < 46; ++i)
+	{
+		BuildingNode[i]->yaw(Degree(90));
+	}
+
+	Ogre::Entity* Building[buildingNum];
+	for (int i = 0; i < buildingNum; i++)
+	{
+		buildingStr = "BuildingNode";
+		buildingStr.append(itoa(i, &c, 10));
+		Building[i] = mSceneMgr->createEntity(buildingStr, "Box01.mesh");
+		BuildingNode[i]->attachObject(Building[i]);
+		Building[i]->setCastShadows(true);		
+		mSceneMgr->getSceneNode(buildingStr)->setScale(Ogre::Vector3(10, 10, 10));
+	}
+
 }
 void PlayState::_drawMapPlane(void)
 {
@@ -454,6 +555,21 @@ void PlayState::_drawMapPlane(void)
 }
 void PlayState::_drawGroundPlane(void)
 {
+	//---------------------------
+
+	Ogre::Plane infPlane(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"infGround",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		infPlane,
+		50000, 50000, 20, 20,
+		true,
+		1, 500, 500,
+		Ogre::Vector3::UNIT_Z);
+	Ogre::Entity* infGround = mSceneMgr->createEntity("infGround");
+	mSceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(0, -1, 0))->attachObject(infGround);
+	infGround->setCastShadows(false);
+	infGround->setMaterialName("Examples/Rockwall");
 	//---------------------------
 
 	Ogre::Plane plane1(Ogre::Vector3::UNIT_Y, 0);
