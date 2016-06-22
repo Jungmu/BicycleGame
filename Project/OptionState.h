@@ -1,6 +1,8 @@
 #pragma once
 #include "GameState.h"
-
+#include <fstream>
+#include <vector>
+#include <string>
 class OptionState : public GameState
 {
 public:
@@ -19,13 +21,17 @@ public:
 
 	bool keyPressed(GameManager* game, const OIS::KeyEvent &e);
 	bool keyReleased(GameManager* game, const OIS::KeyEvent &e);
-
+	void _setOverlay(void);
 	static OptionState* getInstance() { return &mOptionState; }
 
 private:
-
-
-
+	Ogre::OverlaySystem* mOverlaySystem;
+	Ogre::OverlayManager*    mOverlayMgr;
+	Ogre::Overlay*           mTextOverlay;
+	Ogre::Overlay*           mLogoOverlay;
+	Ogre::Overlay*           mDebugOverlay;
+	Ogre::OverlayContainer*  mPanel;
+	Ogre::Root *mRoot;
 	static OptionState mOptionState;
-
+	bool mContinue;
 };

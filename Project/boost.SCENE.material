@@ -1,0 +1,19 @@
+material 01-Default
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 0.0196078 0.0196078 1
+			diffuse 1 0.0196078 0.0196078 1
+			specular 0 0 0 0 25.5
+			emissive 0 0 0 1
+			texture_unit
+			{
+				texture red.jpg
+			}
+		}
+
+	}
+
+}

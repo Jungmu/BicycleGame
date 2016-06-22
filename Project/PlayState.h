@@ -1,13 +1,22 @@
 #pragma once
 #include "DataCollector.h"
 #include "GameState.h"
+#include "TitleState.h"
+#include "OptionState.h"
+#include <chrono>
+
+using namespace std;
+using namespace chrono;
 
 class PlayState : public GameState
 {
 public:
-	bool keyRun,keyLeft,keyRight,angleLock;
+	system_clock::time_point start;
+	duration<double> time = start - start;
+	bool keyRun,keyLeft = false ,keyRight = false ,angleLock;
 	float BicycleSpeed;
 	const int buildingNum = 47;
+	float LAPS = 0;
 	void enter(void);
 	void exit(void);
 
@@ -26,14 +35,14 @@ public:
 
 	void BicycleTurn(GameManager* game, const Ogre::FrameEvent &evt);
 	void BicycleRun(GameManager* game, const Ogre::FrameEvent &evt);
-
-
+	void GameEnd(GameManager* game);
+	void _setOverlay(void);
 	static PlayState* getInstance() { return &mPlayState; }
-
+	Ogre::OverlayElement* textBox;
 	std::string anim;
 
 private:
-
+	void _setItem(void);
 	void _setLights(void);
 	void _drawGroundPlane(void);
 	void _drawGridPlane(void);
@@ -61,7 +70,12 @@ private:
 	Ogre::AnimationState* mAnimationState;
 
 	Ogre::Overlay*           mInformationOverlay;
-
+	Ogre::OverlaySystem* mOverlaySystem;
+	Ogre::OverlayManager*    mOverlayMgr;
+	Ogre::Overlay*           mTextOverlay;
+	Ogre::Overlay*           mLogoOverlay;
+	Ogre::Overlay*           mDebugOverlay;
+	Ogre::OverlayContainer*  mPanel;
 };
 
 

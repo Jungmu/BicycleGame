@@ -1,0 +1,13 @@
+material "boost01_-_Default"
+{
+	technique boost01_-_Default_technique
+	{
+		pass boost01_-_Default_standard
+		{
+			ambient 1 0.0196078 0.0196078 1
+			diffuse 1 0.0196078 0.0196078 1
+			specular 0 0 0 0 25.5
+			emissive 0 0 0 1
+		}
+	}
+}

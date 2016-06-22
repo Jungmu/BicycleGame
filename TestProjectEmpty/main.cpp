@@ -104,7 +104,7 @@ public:
 		mCamera = mSceneMgr->createCamera("main");
 
 
-		mCamera->setPosition(0.0f, 100.0f, 500.0f);
+		mCamera->setPosition(0.0f, 1000.0f, 100.0f);
 		mCamera->lookAt(0.0f, 100.0f, 0.0f);
 
 		mCamera->setNearClipDistance(5.0f);
@@ -115,6 +115,7 @@ public:
 
 
 		ResourceGroupManager::getSingleton().addResourceLocation("resource.zip", "Zip");
+		ResourceGroupManager::getSingleton().addResourceLocation("./", "FileSystem");
 		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 
 		mSceneMgr->setAmbientLight(ColourValue(1.0f, 1.0f, 1.0f));
@@ -127,8 +128,8 @@ public:
 		_drawGridPlane();
 
 
-		Entity* entity1 = mSceneMgr->createEntity("Bicycle", "DustinBody.mesh");
-		SceneNode* node1 = mSceneMgr->getRootSceneNode()->createChildSceneNode("Bicycle", Vector3(0.0f, 0.0f, 0.0f));
+		Entity* entity1 = mSceneMgr->createEntity("Bicycle", "Sphere001.mesh");
+		SceneNode* node1 = mSceneMgr->getRootSceneNode()->createChildSceneNode("Bicycle", Vector3(0.0f, 40.0f, 0.0f));
 		node1->yaw(Degree(180));
 		node1->attachObject(entity1);
 

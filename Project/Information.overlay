@@ -26,7 +26,7 @@ Overlay/Information
             colour_top 1 1 1
             colour_bottom 1 1 1
         }
-        element TextArea(AverageFps)
+        element TextArea(Laps)
         {
             metrics_mode pixels
             left 5
@@ -39,11 +39,11 @@ Overlay/Information
             colour_top 0.7 0.7 0.7
             colour_bottom 0.7 0.7 0.7
         }
-        element TextArea(WorstFps)
+        element TextArea(Time)
         {
             metrics_mode pixels
             left 5
-            top 40
+            top 55
             width 90
             height 30
             font_name Font/NanumBold18
@@ -52,11 +52,11 @@ Overlay/Information
             colour_top 0.7 0.7 0.7
             colour_bottom 0.7 0.7 0.7
         }
-        element TextArea(BestFps)
+        element TextArea(speed)
         {
             metrics_mode pixels
             left 5
-            top 55
+            top 40
             width 90
             height 30
             font_name Font/NanumBold18

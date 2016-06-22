@@ -259,6 +259,9 @@
     <ClInclude Include="PlayState.h" />
     <ClInclude Include="TitleState.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Rank.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
